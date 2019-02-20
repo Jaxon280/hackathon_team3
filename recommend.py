@@ -11,12 +11,12 @@ dislike_df = pd.DataFrame({'user_id':[1,1,1,1], '甘味':[1,3,3,4],'苦味':[5,3
 #アンケートは事前に勝手に作っとく
 #inputはrails側でのuser_id
 preference_df = pd.DataFrame(columns = ['user_id','甘味','苦味','酸味','塩味',
-'食感','脂質','カテゴリ'])
+'食感','脂質','カテゴリ','都道府県ID'])
 preference_df = preference_df.append(dislike_df)
 
 
 material_df = pd.read_csv('/Users/keresu0720/Desktop/my_flask/material.csv')
-material_df = material_df[material_df['都道府県ID'] = 13]
+material_df = material_df[material_df['都道府県ID'] == 13]
 #1...北海道
 #13...東京都
 #21...岐阜県
@@ -41,13 +41,17 @@ def match_preference(row):
 @app.route("/", methods = ['POST'])
 def get_material():
     suggestion_material = []
-    while len(suggestion_material) < 5:
-        random_material = random.randint(0,9)
+    while len(suggestion_material) < 4:
+        random_material = random.randint(0,len(material_df.index)-1)
+        print(random.randint(0,len(material_df.index)-1)
         #注意：10個データをCSVで用意
         #item_idで判定
         if random_material not in suggestion_material:
+            print(material_df.iloc[random_material,:])
             if match_preference(material_df.iloc[random_material,:]) < 6:
                 suggestion_material.append(random_material)
+            else:
+                continue
     return jsonify({'recommendation1':suggestion_material[0],'recommendation2':suggestion_material[1],'recommendation3':suggestion_material[2],'recommendation4':suggestion_material[3],'recommendation5':suggestion_material[4]})
     #suggestion_materialはDataframeではなくリスト
     #item_idを返せば良い
